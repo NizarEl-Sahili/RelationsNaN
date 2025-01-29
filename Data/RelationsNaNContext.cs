@@ -13,7 +13,7 @@ namespace RelationsNaN.Data
         public RelationsNaNContext (DbContextOptions<RelationsNaNContext> options)
             : base(options)
         {
-
+            this.ChangeTracker.LazyLoadingEnabled = false;
         }
 
         protected override void OnModelCreating(ModelBuilder builder)

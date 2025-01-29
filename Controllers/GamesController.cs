@@ -77,7 +77,7 @@ namespace RelationsNaN.Controllers
                 return NotFound();
             }
 
-            var game = await _context.Game.FindAsync(id);
+            var game = await _context.Game.Include(g=>g.Platforms).Include(g=>g.Genre).FirstOrDefaultAsync(x=>x.Id==id);
             if (game == null)
             {
                 return NotFound();
@@ -86,7 +86,7 @@ namespace RelationsNaN.Controllers
             var platforms = await _context.Platform.ToListAsync();
             foreach (var plat in game.Platforms)
                 platforms.Remove(plat);
-            ViewData["Platforms"] = new SelectList(platforms, "Id", "Name", game.Platforms);
+            ViewData["Platforms"] = new SelectList(platforms, "Id", "Name");
             return View(game);
         }
 
@@ -144,7 +144,7 @@ namespace RelationsNaN.Controllers
 
             return View(game);
         }
-        [HttpPost, ActionName("AddPlatform")]
+        [HttpPost/*, ActionName("AddPlatform")*/]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddPlatform(int id, int platformId)
         {
@@ -164,15 +164,12 @@ namespace RelationsNaN.Controllers
 
         [HttpPost, ActionName("RemovePlatform")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> RemovePlatform(int[] ids)
+        public async Task<IActionResult> RemovePlatform(int id, int platformId)
         {
-            var game = await _context.Game.FindAsync(ids[0]);
-            var platform = await _context.Platform.FindAsync(ids[1]);
+            var game = await _context.Game.Include(g=>g.Platforms).FirstOrDefaultAsync(x=>x.Id==id);
+            var platform = await _context.Platform.FindAsync(platformId);
             if (game != null && platform != null)
-            {
                 game.Platforms.Remove(platform);
-            }
-
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
